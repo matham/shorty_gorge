@@ -1,6 +1,3 @@
-// updateFormClassList runs daily
-// parseSelectedClasses runs From spreadsheet - On form submit
-
 // constants such as sheet names, column names etc
 const scheduleSheetName = "Class schedule";
 const responseSheetName = "Registrations via Google Form";
@@ -21,6 +18,7 @@ const scheduleColNamesMap = new Map([
   ["Description", null],
   ["Requirements", null],
   ["Length", null],
+  ["Teacher", null],
 ])
 
 
@@ -55,19 +53,25 @@ function updateFormClassList() {
   for (i = 0; i < classes.length; i++) {
     let name = classes[i][scheduleColNamesMap.get("Class Name")] + " - " + classes[i][scheduleColNamesMap.get("Unique ID")];
 
-    description += "\n\n-------  " + name + "  -------\n\n";
+    description += "\n\n🌟🌟🌟🌟🌟  " + name + "  🌟🌟🌟🌟🌟\n\n";
     description += classes[i][scheduleColNamesMap.get("Description")] + "\n\n";
     if (classes[i][scheduleColNamesMap.get("Form Notes")]) {
       description += classes[i][scheduleColNamesMap.get("Form Notes")] + "\n\n";
     }
 
-    description += "-- Prerequisites: " + classes[i][scheduleColNamesMap.get("Requirements")] + "\n";
-    description += "-- Length: " + classes[i][scheduleColNamesMap.get("Length")] + "\n";
-    description += "-- Dates: " + classes[i][scheduleColNamesMap.get("Dates")] + "\n\n";
+    description += "-- 📜Prerequisites: " + classes[i][scheduleColNamesMap.get("Requirements")] + "\n";
+    description += "-- ⌚Length: " + classes[i][scheduleColNamesMap.get("Length")] + "\n";
+    description += "-- 📅Dates: " + classes[i][scheduleColNamesMap.get("Dates")] + "\n\n";
 
-    description += "-- Room: " + classes[i][scheduleColNamesMap.get("Location")] + "\n";
-    description += "-- Price: $" + classes[i][scheduleColNamesMap.get("Price")] + " for the full series ($"
-      + classes[i][scheduleColNamesMap.get("Door Price")] + " at the door)\n";
+    if (classes[i][scheduleColNamesMap.get("Teacher")]) {
+      description += "-- 🧑‍🏫Teacher: " + classes[i][scheduleColNamesMap.get("Teacher")] + "\n";
+    }
+    description += "-- 📍Room: " + classes[i][scheduleColNamesMap.get("Location")] + "\n";
+    description += "-- 💸Price: $" + classes[i][scheduleColNamesMap.get("Price")] + " for the full series"
+    if (classes[i][scheduleColNamesMap.get("Door Price")] && classes[i][scheduleColNamesMap.get("Door Price")] != classes[i][scheduleColNamesMap.get("Price")]) {
+      description += " ($" + classes[i][scheduleColNamesMap.get("Door Price")] + " at the door)";
+    }
+    description += "\n";
 
     entries.push(name);
   }
@@ -138,7 +142,7 @@ function displayEmailListForEmail() {
       break;
     }
 
-    if (!sheet.isRowHiddenByFilter(i) && !emailSet.has(values[i][emailCol])) {
+    if (!sheet.isRowHiddenByFilter(i + 1) && !emailSet.has(values[i][emailCol])) {
       items += '"' + values[i][nameCol] + '" <' + values[i][emailCol] + '>, ';
       emailSet.add(values[i][emailCol]);
     }
