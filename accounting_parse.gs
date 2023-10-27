@@ -1,11 +1,14 @@
 const toProcessLabelName = 'Payment/PaymentToBeProcessed';
 const processedLabelName = 'Payment/PaymentProcessed';
-const eChargesSheetName = 'online charges';
+const eChargesSheetName = 'automatic charges';
+const chargesSpreadSheetID = '1cHsQh2W9iDT3ErhDcqlYLTV5tWEKSKQ9K3_UanDISUo';
 const venmoSheetName = 'venmo acct';
 const paySourceForCC = 'Mario CC';
+const scriptTimeQuotaMS = 6 * 60 * 1000;
 
 
 function parseEmails() {
+  const tStart = Date.now();
   const toProcessLabel = GmailApp.getUserLabelByName(toProcessLabelName);
   const processedLabel = GmailApp.getUserLabelByName(processedLabelName);
 
@@ -20,7 +23,7 @@ function parseEmails() {
   let ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheets = {'ss': ss, 'eCharges': null, 'venmo': null};
 
-  for (let i = 0; i < threadsToProcess.length; i++) {
+  for (let i = 0; i < threadsToProcess.length && Date.now() - tStart < 0.5 * scriptTimeQuotaMS; i++) {
     const thread = threadsToProcess[i];
     if (parseEmail(thread, sheets)) {
       thread.addLabel(processedLabel);
@@ -185,7 +188,8 @@ function parseMailchimp(msg, subject, sheets) {
 function appendEChargesRow(row, sheets) {
   let sheet = sheets.eCharges;
   if (!sheet) {
-    sheets.eCharges = sheets.ss.getSheetByName(eChargesSheetName);
+    const ssCharges = SpreadsheetApp.openById(chargesSpreadSheetID);
+    sheets.eCharges = ssCharges.getSheetByName(eChargesSheetName);
     sheet = sheets.eCharges;
   }
 
