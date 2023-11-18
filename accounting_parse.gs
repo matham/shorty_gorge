@@ -100,7 +100,7 @@ function parseVenmo(msg, subject, sheets) {
   }
 
   if (!row) {
-    Logger.log('Could not match email with subject and body:');
+    Logger.log('Could not parse email with subject and body:');
     Logger.log(subject);
     Logger.log(body);
     return false;
@@ -124,20 +124,28 @@ function cleanVenmoDate(date) {
 }
 
 function parseVenmoPaidMe(body) {
-  const re = /\<.+?venmo.+?\>\s*(.+?)\s*\<.+?venmo.+?user_id\=([\d]+).+\>\s*paid\s+You\s*\<.+?venmo.+?\>\s*([^]*?)\s*Transfer Date and Amount:\s*([\w ,]+)·[^]+?\$([\d.]+)\s*Fee\s*\-\s*\$([\d.]+)\s*\+\s*\$([\d.]+)/i;
+  const re = /\<.+?venmo.+?\>\s*(.+?)\s*\<.+?venmo.+?user_id\=([\d]+).+\>\s*paid\s+You\s*\<.+?venmo.+?\>\s*([^]*?)\s*Transfer Date and Amount:\s*([\w ,]+)·[^]+?\$([\d.]+)\s*(?:Fee\s*\-\s*\$([\d.]+)\s*\+\s*\$([\d.]+))?/i;
   const match = body.match(re);
   if (!match) {
     return false;
   }
 
+  const amt = match[5].trim();
+  let fee = "0";
+  let net = amt;
+  if (match[6] != null){
+    fee = match[6].trim();
+    net = match[7].trim();
+  }
+
   const row = [
     cleanVenmoDate(match[4].trim()),
     match[1].trim() + "<https://venmo.com/code?user_id=" + match[2].trim() + ">",
-    match[7].trim(),
+    net,
     "",
     match[3].trim(),
-    match[5].trim(),
-    match[6].trim()
+    amt,
+    fee
   ]
   return row;
 }
